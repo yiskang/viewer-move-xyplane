@@ -103,6 +103,7 @@ function onDocumentLoadFailure(viewerErrorCode) {
 //
 //////////////////////////////////////////////////////////////////////////
 function onGeometryLoadedHandler(event) {
+        event.target.model = event.model
         var viewer = event.target;
         viewer.removeEventListener(
                 Autodesk.Viewing.GEOMETRY_LOADED_EVENT,
@@ -147,27 +148,22 @@ function onSelection (event) {
     }
 }
 
-function matrixTransform(){
+function floorTransform(){
    
-        var matrix = new THREE.Matrix4();
-        var t;
-        var euler;
-
+        var transform = {
+        translation: new THREE.Vector3(0.0, 0.0, 0.0),
+        rotation: new THREE.Vector3(90.0, 0.0, 0.0),
+        scale: new THREE.Vector3(0.003, 0.003, 0.003)
+    }
+        //console.log(transform);
         if (pointData.face.normal.x === 0 && pointData.face.normal.y === 0 ){
-            t = new THREE.Vector3(pointData.point.x -34 , pointData.point.y -37.5 , pointData.point.z -10.55);
-            euler = new THREE.Euler(90 * Math.PI/180, 0, 0,'XYZ');
+            transform.translation = new THREE.Vector3(pointData.point.x , pointData.point.y , pointData.point.z+2.5);
             console.log('Clipped to Floor Z axis');
         }
         else {
             alert('You need to select a point on the Floor');
         }
-                      
-        var q = new THREE.Quaternion();
-        q.setFromEuler(euler);
-        var s = new THREE.Vector3(0.003, 0.003, 0.003);    
-        matrix.compose(t, q, s);
-
-        return matrix
+        return transform;
  
 }
 
@@ -194,12 +190,9 @@ function loadModel(viewables, lmvDoc, indexViewable) {
         var initialViewable = viewables[indexViewable];
         var svfUrl = lmvDoc.getViewablePath(initialViewable);
         var modelOptions; // = TransformSimple(); 
-         var modelName;
+        var modelName;
 
         if (lmvDoc.myData.guid.toString() === "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dmlld2VyLXJvY2tzLXJlYWN0L3JhY2tfYXNzLmYzZA"){
-            modelOptions = {
-                placementTransform: matrixTransform()
-            };
              modelName = "Rack.f3d"
         }
         else {
@@ -211,6 +204,12 @@ function loadModel(viewables, lmvDoc, indexViewable) {
         }
         viewer.loadModel(svfUrl, modelOptions, (model) => {
             model.name = modelName;
+            if (model.name === "Rack.f3d"){
+                var panel = viewer.getExtension(ModelTransformerExtension).panel;
+                panel.setTransform(floorTransform());
+                panel.applyTransform(model);
+            }
+            
             resolve(model)
         })
     })
