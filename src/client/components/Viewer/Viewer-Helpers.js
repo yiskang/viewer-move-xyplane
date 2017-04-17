@@ -110,6 +110,7 @@ function onGeometryLoadedHandler(event) {
                 onGeometryLoadedHandler);
         viewer.setQualityLevel(false,false);
         // viewer.impl.toggleCelShading(true);
+        viewer.showAll();
         viewer.setGroundShadow(false);
         viewer.fitToView();   
 }
@@ -199,7 +200,7 @@ function loadModel(viewables, lmvDoc, indexViewable) {
             modelOptions = {
                 sharedPropertyDbPath: lmvDoc.getPropertyDbPath()
             };
-            viewer.impl.toggleCelShading(true);
+            
             modelName = "fabric.rvt"
         }
         viewer.loadModel(svfUrl, modelOptions, (model) => {
